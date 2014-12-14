@@ -52,4 +52,8 @@ fn it_parses() {
     assert_eq!(vec![
         pair("y", Some("\\x"))
     ], logfmt::parse("y=\\x"));
+
+    // this is considered garbage and produces nothing
+    assert_eq!(vec![
+    ], logfmt::parse("=y"));
 }
