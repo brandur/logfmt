@@ -1,0 +1,5 @@
+[package]
+
+name = "logfmt"
+version = "0.0.1"
+authors = ["Brandur <brandur@mutelight.org>"]
