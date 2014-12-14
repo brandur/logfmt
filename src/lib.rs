@@ -5,6 +5,15 @@ pub struct Pair {
     pub val: Option<String>,
 }
 
+fn complete_pair(buf: String, pair: Option<Pair>) -> Pair {
+    match pair {
+        Some(Pair { key: k, val: _ }) =>
+            Pair { key: k, val: Some(buf) },
+        None =>
+            Pair { key: buf, val: None },
+    }
+}
+
 pub fn parse(message: &str) -> Vec<Pair> {
     let mut pair: Option<Pair> = None;
     let mut pairs: Vec<Pair> = vec![];
@@ -22,13 +31,7 @@ pub fn parse(message: &str) -> Vec<Pair> {
                         // the buffer that we just processed is either a value
                         // or a valueless key depending on the current state of
                         // `pair`
-                        let complete_pair = match pair {
-                            Some(Pair { key: k, val: _ }) =>
-                                Pair { key: k, val: Some(buf) },
-                            None =>
-                                Pair { key: buf, val: None },
-                        };
-                        pairs.push(complete_pair);
+                        pairs.push(complete_pair(buf, pair));
                         pair = None;
                     }
                     buf = String::new();
@@ -67,15 +70,10 @@ pub fn parse(message: &str) -> Vec<Pair> {
         }
     }
 
-    // and process one final time at the end of the message to get th
+    // and process one final time at the end of the message to get the last
+    // data point
     if !garbage {
-        let complete_pair = match pair {
-            Some(Pair { key: k, val: _ }) =>
-                Pair { key: k, val: Some(buf) },
-            None =>
-                Pair { key: buf, val: None },
-        };
-        pairs.push(complete_pair);
+        pairs.push(complete_pair(buf, pair));
     }
 
     pairs
