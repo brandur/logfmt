@@ -1,11 +1,11 @@
 #[deriving(PartialEq)]
 #[deriving(Show)]
-pub struct Pair {
-    pub key: String,
-    pub val: Option<String>,
+pub struct Pair<'a> {
+    pub key: &'a str,
+    pub val: Option<&'a str>,
 }
 
-fn complete_pair(buf: String, pair: Option<Pair>) -> Pair {
+fn complete_pair<'a>(buf: &'a str, pair: Option<Pair<'a>>) -> Pair<'a> {
     match pair {
         Some(Pair { key: k, val: _ }) =>
             Pair { key: k, val: Some(buf) },
@@ -15,43 +15,53 @@ fn complete_pair(buf: String, pair: Option<Pair>) -> Pair {
 }
 
 pub fn parse(message: &str) -> Vec<Pair> {
+    let mut buf_start = 0u;
     let mut pair: Option<Pair> = None;
     let mut pairs: Vec<Pair> = vec![];
-    let mut buf = String::new();
 
     let mut escape = false;
     let mut garbage = false;
+    let mut next = false;
     let mut quoted = false;
 
-    for c in message.chars() {
+    for (i, c) in message.char_indices() {
+        // if set, we've been told to move to the next token
+        if next {
+            buf_start = i;
+            next = false;
+        }
+
         match (quoted, c) {
             (false, ' ') => {
-                if !buf.is_empty() {
+                if i > buf_start {
                     if !garbage {
                         // the buffer that we just processed is either a value
                         // or a valueless key depending on the current state of
                         // `pair`
-                        pairs.push(complete_pair(buf, pair));
+                        pairs.push(complete_pair(message.slice(buf_start, i), pair));
                         pair = None;
                     }
-                    buf = String::new();
+                    next = true;
                 }
                 garbage = false;
             },
             (false, '=') => {
-                if !buf.is_empty() {
-                    pair = Some(Pair{key: buf, val: None});
-                    buf = String::new();
+                if i > buf_start {
+                    pair = Some(Pair { key: message.slice(buf_start, i), val: None });
+                    next = true;
                 } else {
                     garbage = true;
                 }
             },
             (true, '\\') => {
+                // @todo: this will need to be fixed
+                //buf_start = buf_start + 1
                 escape = true;
             }
             (_, '"') => {
                 if escape {
-                    buf.push(c);
+                    // @todo: this will need to be fixed
+                    //buf.push(c);
                     escape = false;
                 } else {
                     quoted = !quoted;
@@ -62,10 +72,10 @@ pub fn parse(message: &str) -> Vec<Pair> {
                 // character was not a quote, then store the escape back into the
                 // buffer
                 if escape {
-                    buf.push('\\');
+                    // @todo: this will need to be fixed
+                    //buf.push('\\');
                     escape = false;
                 }
-                buf.push(c);
             },
         }
     }
@@ -73,7 +83,7 @@ pub fn parse(message: &str) -> Vec<Pair> {
     // and process one final time at the end of the message to get the last
     // data point
     if !garbage {
-        pairs.push(complete_pair(buf, pair));
+        pairs.push(complete_pair(message.slice_from(buf_start), pair));
     }
 
     pairs

@@ -1,11 +1,11 @@
 extern crate logfmt;
 
-fn pair(key: &str, val: Option<&str>) -> logfmt::Pair {
+fn pair<'a>(key: &'a str, val: Option<&'a str>) -> logfmt::Pair<'a> {
     match val {
         Some(v) =>
-            logfmt::Pair { key: key.to_string(), val: Some(v.to_string()) },
+            logfmt::Pair { key: key, val: Some(v) },
         None =>
-            logfmt::Pair { key: key.to_string(), val: None },
+            logfmt::Pair { key: key, val: None },
     }
 }
 
