@@ -1,17 +1,12 @@
 #[deriving(PartialEq)]
 #[deriving(Show)]
-pub struct Pair<'a> {
-    pub key: &'a str,
-    pub val: Option<&'a str>,
+pub struct Pair {
+    pub key: String,
+    pub val: Option<String>,
 }
 
-pub struct PairCollection<'a> {
-    buf: String,
-    pub pairs: Vec<Pair<'a>>,
-}
-
-fn complete_pair<'a>(buf: &'a str, pair: &Option<Pair<'a>>) -> Pair<'a> {
-    match *pair {
+fn complete_pair(buf: String, pair: Option<Pair>) -> Pair {
+    match pair {
         Some(Pair { key: k, val: _ }) =>
             Pair { key: k, val: Some(buf) },
         None =>
@@ -19,7 +14,7 @@ fn complete_pair<'a>(buf: &'a str, pair: &Option<Pair<'a>>) -> Pair<'a> {
     }
 }
 
-pub fn parse(message: &str) -> PairCollection {
+pub fn parse(message: &str) -> Vec<Pair> {
     let mut pair: Option<Pair> = None;
     let mut pairs: Vec<Pair> = vec![];
     let mut buf = String::with_capacity(message.len());
@@ -29,27 +24,27 @@ pub fn parse(message: &str) -> PairCollection {
     let mut garbage = false;
     let mut quoted = false;
 
-    for (i, c) in message.char_indices() {
+    for c in message.chars() {
         match (quoted, c) {
             (false, ' ') => {
-                let slice = buf.as_slice().slice_from(buf_pos);
+                let slice = buf.as_slice().slice_from(buf_pos).to_string();
                 if !slice.is_empty() {
+                    buf_pos += slice.len();
                     if !garbage {
                         // the buffer that we just processed is either a value
                         // or a valueless key depending on the current state of
                         // `pair`
-                        pairs.push(complete_pair(slice, &pair));
+                        pairs.push(complete_pair(slice, pair));
                         pair = None;
                     }
-                    buf_pos += slice.len();
                 }
                 garbage = false;
             },
             (false, '=') => {
-                let slice = buf.as_slice().slice_from(buf_pos);
+                let slice = buf.as_slice().slice_from(buf_pos).to_string();
                 if !slice.is_empty() {
-                    pair = Some(Pair { key: slice, val: None });
                     buf_pos += slice.len();
+                    pair = Some(Pair { key: slice, val: None });
                 } else {
                     garbage = true;
                 }
@@ -81,13 +76,9 @@ pub fn parse(message: &str) -> PairCollection {
     // and process one final time at the end of the message to get the last
     // data point
     if !garbage {
-        let slice = buf.as_slice().slice_from(buf_pos);
-        pairs.push(complete_pair(slice, &pair));
+        let slice = buf.as_slice().slice_from(buf_pos).to_string();
+        pairs.push(complete_pair(slice, pair));
     }
 
-    // trim any excess capacity off the buffer (discrepancies being caused by
-    // quotes and escape characters)
-    buf.shrink_to_fit();
-
-    PairCollection { buf: buf, pairs: pairs }
+    pairs
 }
