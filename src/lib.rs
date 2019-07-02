@@ -1,5 +1,5 @@
-#[deriving(PartialEq)]
-#[deriving(Show)]
+#[derive(PartialEq)]
+#[derive(Debug)]
 pub struct Pair {
     pub key: String,
     pub val: Option<String>,
