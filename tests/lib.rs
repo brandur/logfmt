@@ -54,6 +54,6 @@ fn it_parses() {
     ], logfmt::parse("y=\\x"));
 
     // this is considered garbage and produces nothing
-    assert_eq!(vec![
-    ], logfmt::parse("=y"));
+    let input: Vec<logfmt::Pair> = vec![];
+    assert_eq!(input, logfmt::parse("=y"));
 }
