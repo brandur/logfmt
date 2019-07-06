@@ -1,5 +1,36 @@
 #[deriving(PartialEq)]
 #[deriving(Show)]
+pub struct Pair<'a> {
+    key_slice: Option<&'a str>,
+    val_slice: Option<&'a str>,
+
+    key_string: Option<String>,
+    val_string: Option<String>,
+}
+
+impl<'a> Pair<'a> {
+    fn key(&self) -> &str {
+        match (&self.key_slice, &self.key_string) {
+            (Some(ref v), None) => v,
+            (None, Some(ref v)) => v.as_slice(),
+            _               => panic!(),
+        }
+    }
+
+/*
+    fn val(&self) -> &str {
+        match (self.val_slice, self.val_string) {
+            (Some(v), None) => v,
+            (None, Some(v)) => &v,
+            _               => panic!(),
+        }
+    }
+*/
+}
+
+/*
+#[deriving(PartialEq)]
+#[deriving(Show)]
 pub struct Pair {
     pub key: String,
     pub val: Option<String>,
@@ -13,8 +44,21 @@ fn complete_pair(buf: String, pair: Option<Pair>) -> Pair {
             Pair { key: buf, val: None },
     }
 }
+*/
 
 pub fn parse(message: &str) -> Vec<Pair> {
+    let mut pairs: Vec<Pair> = vec![];
+
+    let p = Pair { key_slice: Some(message), key_string: None, val_slice: Some(message), val_string: None };
+    pairs.push(p);
+
+    let s = message.to_string();
+    let p = Pair { key_slice: None, key_string: Some(s), val_slice: Some(message), val_string: None };
+
+    pairs.push(p);
+    pairs
+
+/*
     let mut pair: Option<Pair> = None;
     let mut pairs: Vec<Pair> = vec![];
     let mut buf = String::with_capacity(message.len());
@@ -81,4 +125,5 @@ pub fn parse(message: &str) -> Vec<Pair> {
     }
 
     pairs
+*/
 }
