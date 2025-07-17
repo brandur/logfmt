@@ -1,7 +1,7 @@
 [package]
-
 name = "logfmt"
 version = "0.0.2"
 authors = ["Brandur <brandur@mutelight.org>"]
 license = "MIT"
 description = "logfmt parser for Rust"
+edition = "2024"
