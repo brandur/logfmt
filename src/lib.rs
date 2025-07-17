@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Pair {
     pub key: String,
     pub val: Option<String>,
