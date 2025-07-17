@@ -1,5 +1,4 @@
-#[derive(PartialEq)]
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Pair {
     pub key: String,
     pub val: Option<String>,
@@ -7,16 +6,20 @@ pub struct Pair {
 
 fn complete_pair(buf: String, pair: Option<Pair>) -> Pair {
     match pair {
-        Some(Pair { key: k, val: _ }) =>
-            Pair { key: k, val: Some(buf) },
-        None =>
-            Pair { key: buf, val: None },
+        Some(Pair { key: k, val: _ }) => Pair {
+            key: k,
+            val: Some(buf),
+        },
+        None => Pair {
+            key: buf,
+            val: None,
+        },
     }
 }
 
 pub fn parse(message: &str) -> Vec<Pair> {
     let mut pair: Option<Pair> = None;
-    let mut pairs: Vec<Pair> = vec![];
+    let mut pairs: Vec<Pair> = Vec::new();
     let mut buf = String::new();
 
     let mut escape = false;
@@ -37,15 +40,18 @@ pub fn parse(message: &str) -> Vec<Pair> {
                     buf = String::new();
                 }
                 garbage = false;
-            },
+            }
             (false, '=') => {
                 if !buf.is_empty() {
-                    pair = Some(Pair{key: buf, val: None});
+                    pair = Some(Pair {
+                        key: buf,
+                        val: None,
+                    });
                     buf = String::new();
                 } else {
                     garbage = true;
                 }
-            },
+            }
             (true, '\\') => {
                 escape = true;
             }
@@ -56,7 +62,7 @@ pub fn parse(message: &str) -> Vec<Pair> {
                 } else {
                     quoted = !quoted;
                 }
-            },
+            }
             _ => {
                 // if the last character we read was an escape, but this
                 // character was not a quote, then store the escape back into the
@@ -66,7 +72,7 @@ pub fn parse(message: &str) -> Vec<Pair> {
                     escape = false;
                 }
                 buf.push(c);
-            },
+            }
         }
     }
 
